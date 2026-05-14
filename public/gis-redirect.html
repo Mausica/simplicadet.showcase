@@ -1,0 +1,195 @@
+﻿<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Conectare cu Google - Simplicadet</title>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      :root {
+        --bg-light: #f7f7f7;
+        --bg-dark: #0f0f0f;
+        --text-light: #171717;
+        --text-dark: #ededed;
+        --glass-light: rgba(255, 255, 255, 0.7);
+        --glass-dark: rgba(255, 255, 255, 0.05); /* Liquid Glass style */
+        --border-light: rgba(0, 0, 0, 0.08);
+        --border-dark: rgba(255, 255, 255, 0.1);
+        --primary: #262626;
+        --primary-fg: #fff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --primary: #ededed;
+          --primary-fg: #000;
+        }
+        body {
+          background-color: var(--bg-dark);
+          color: var(--text-dark);
+        }
+        .bg-gradient {
+          background: 
+            radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.03), transparent 25%), 
+            radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.02), transparent 25%);
+        }
+        .card {
+          background: var(--glass-dark);
+          border-color: var(--border-dark);
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        body {
+          background-color: var(--bg-light);
+          color: var(--text-light);
+        }
+        .bg-gradient {
+          background: 
+            radial-gradient(circle at 15% 50%, rgba(0, 0, 0, 0.02), transparent 25%), 
+            radial-gradient(circle at 85% 30%, rgba(0, 0, 0, 0.01), transparent 25%);
+        }
+        .card {
+          background: var(--glass-light);
+          border-color: var(--border-light);
+        }
+      }
+
+      body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      
+      .bg-gradient {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 420px;
+        padding: 40px;
+        border-radius: 24px;
+        border-width: 1px;
+        border-style: solid;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        letter-spacing: -0.02em;
+      }
+
+      p {
+        margin: 0 0 32px 0;
+        opacity: 0.7;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid currentColor;
+        opacity: 0.7;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0 0 16px 0;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        padding: 0 24px;
+        background: var(--primary);
+        color: var(--primary-fg);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 12px;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        opacity: 0.9;
+      }
+
+      .loader {
+        width: 32px;
+        height: 32px;
+        border: 3px solid currentColor;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 24px auto;
+        opacity: 0.8;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Mobile adjustments */
+      @media (max-width: 480px) {
+        .card { padding: 30px 20px; }
+        h1 { font-size: 1.25rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-gradient"></div>
+    <div class="card">
+      <div class="status">Autentificare</div>
+      <div class="loader"></div>
+      <h1>Conectare cu Google</h1>
+      <p>Se deschide pagina Google pentru autentificare...</p>
+      <a id="back" class="btn" href="/">Anuleaz&#259; &#537;i revino</a>
+    </div>
+    <script>
+      (function(){
+        function get(name){ const u=new URL(window.location.href); return u.searchParams.get(name)||''; }
+        const clientId = get('client_id');
+        const loginUri = get('login_uri');
+        const callbackUrl = get('callbackUrl');
+        
+        function start(){
+          if(!window.google || !google.accounts || !google.accounts.id){ setTimeout(start, 100); return; }
+          google.accounts.id.initialize({
+            client_id: clientId,
+            ux_mode: 'redirect',
+            login_uri: loginUri + (callbackUrl ? (loginUri.includes('?')?'&':'?') + 'callbackUrl=' + encodeURIComponent(callbackUrl) : ''),
+            auto_select: false,
+            context: 'signin',
+            use_fedcm_for_prompt: false
+          });
+          google.accounts.id.prompt(function(n){
+            try {
+              if ((n.isNotDisplayed && n.isNotDisplayed()) || (n.isSkippedMoment && n.isSkippedMoment()) || (n.isDismissedMoment && n.isDismissedMoment())) {
+                setTimeout(function(){ google.accounts.id.prompt(); }, 400);
+              }
+            } catch {}
+          });
+        }
+        
+        document.getElementById('back').addEventListener('click', function(){ });
+        start();
+      })();
+    </script>
+  </body>
+</html>
